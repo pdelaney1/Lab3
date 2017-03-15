@@ -9,7 +9,7 @@ class Game {
 
     int size; // the size of the board matrix (it's a size x size matrix)
     int numPlayers; // the number of players (must be between 2 and 5)
-    Player **players; // an array of pointers to Player objects, or the array of players of the game
+    Player** players; // an array of pointers to Player objects, or the array of players of the game
     int turn; // indicating which player's turn it is (the index into the players array)
     bool boardFull; //for whether the board is full or not (whether there are more moves)
     int compplayers; // for the number of automated (computer) players, used when initializing the game

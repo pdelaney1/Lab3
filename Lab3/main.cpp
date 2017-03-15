@@ -6,6 +6,7 @@
  * in any way other than that they are required for lab 3.
  */
 
+#include <iostream>
 #include <cstdlib>
 #include <string>
 #include "Game.hpp"
@@ -20,6 +21,16 @@
  */
 int main(int argc, char** argv) {
 
-    Game game;
+	char whichConstructor;
+	std::cout << "Would you like to play the default game? or the custom game?(y for default, n for custom)";
+	std::cin >> whichConstructor;
+	std::cout << std::endl;
+	if(whichConstructor == 'y'){
+		Game game(true);
+	}
+	else if(whichConstructor == 'n'){
+		Game game;
+	}
+	std::cout << "Game Over!" << std::endl;
     return 0;
 }
