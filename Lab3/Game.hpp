@@ -95,11 +95,22 @@ public:
     // When the board is full, this method finds which player has the highest score, and is thus the winner
 
     /************* This method is only necessary for the AI Extra Credit *******************/
-    bool checkThree(int x, int y);
+    //bool checkThree(int x, int y);
     //This method checks to see if adding the character v to the cell x,y in the board will create 3/4 of a square, and, if
     // so, returns true (this will lead to findMoves adding this cell to the MovesList object (e.g.,
     //allMovesls[2].potentialMoves[allMovesls.numMoves].resetCell(x,y,v);
 
+
+    int howMany(int x, int y);
+    // This function is slightly different from CheckFour, This function counts how many
+    // squares are made by making a single move, since a move can make up to four squares
+    // it made sense to us to count that as four points instead of one point, so this
+    // does precisely that, this function calls isSquare()
+
+    bool isSquare(int a, int b, int c, int d, int e, int f, int g, int h, char[]);
+    // This sole intention of this function is to check if there is a square completed
+    // by making a single move, this function is called by the checkFour function, and
+    // returns true if a square is completed anywhere on the board, and false otherwise
 };
 
 #endif /* GAME_HPP */

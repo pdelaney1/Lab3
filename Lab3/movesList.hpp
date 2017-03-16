@@ -6,7 +6,7 @@
 class movesList {
 	friend class Player;
 	friend class Game;
-	//cell *potentialMoves; // a list of cells (x,y coordinates) that are potential moves
+	cell *potentialMoves; // a list of cells (x,y coordinates) that are potential moves
 	// Note that for simplicity's sake, this list is dynamically allocated to be an array, and the length of
 	// this array will be the game board's size x size.  This means
 	// there will almost always be fewer potential cells than the size of the list.
@@ -20,7 +20,7 @@ class movesList {
 
 	// one more point: This is a clear example of a list that would be MUCH BETTER as a linked list
 
-	//int numMoves;  // the number of potential moves
+	int numMoves;  // the number of potential moves
 public:
 	movesList(); // constructor, initializes potentialMoves to NULL and numMoves to 0;
 	void makeList(int s);

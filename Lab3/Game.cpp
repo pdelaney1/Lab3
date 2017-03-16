@@ -1,5 +1,6 @@
 #include <iostream>
-#include <cstring>
+#include <string>
+#include <sstream>
 #include <cstdlib>
 #include "Game.hpp"
 
@@ -27,7 +28,6 @@ Game::Game() {
 	getPlayers();
 	printPlayers();
 	makeBoard();
-	printBoard();
 //    while (numPlayers + compplayers > 5) {
 //        std::cout << "Error! There are too many players on the board"
 //                << std::endl;
@@ -55,9 +55,7 @@ Game::Game(bool b) {
 		turn = 0;
 		boardFull = false;
 		getPlayers();
-		printPlayers();
 		makeBoard();
-		printBoard();
 		playGame();
 	}
 }
@@ -75,9 +73,9 @@ void Game::makeBoard() {
 		}
 	}
 	board = tmp;
-	for (int i = 0; i < size; i++)
-		delete[] tmp[i];
-	delete[] tmp;
+//	for (int i = 0; i < size; i++)
+//		delete[] tmp[i];
+//	delete[] tmp;
 }
 
 void Game::printBoard() {
@@ -101,27 +99,27 @@ void Game::getPlayers() {
 	Player** tmp = new Player*[numPlayers + compplayers];
 	if (numPlayers > 0) {
 		int i = 0;
-		while(i < numPlayers) {
+		while (i < numPlayers) {
 			tmp[i] = new Player();
-			std::cout << tmp[i]->name << std::endl;
 			i++;
 		}
 	}
 	if (compplayers > 0) {
-		int j=numPlayers;
-		while(j < (numPlayers + compplayers)){
-			std::string s(1, char(j));
-			std::string n = "Computer" + s;
+		int j = numPlayers;
+		while (j < (numPlayers + compplayers)) {
+			std::stringstream ss;
+			ss << ((j + 1) - numPlayers);
+			std::string s = ss.str();
+			std::string n = "Computer" + ss.str();
 			// There are a maximum of 5 players on the board so we need only five letters for the computers
 			// We will check to make sure the jth value in ic is not being used by a human player.
 			// If it is not then we will use the jth char for compplayer, else we check the (j+1)th value... etc
-			tmp[j] = new Player(n, charPool[j-compplayers], true);
+			tmp[j] = new Player(n, charPool[j - numPlayers], true);
 			std::cout << tmp[j]->name << std::endl;
 			j++;
 		}
 	}
 	players = tmp;
-	printPlayers();
 //	for (int i = 0; i < size; i++)
 //		delete[] tmp[i];
 //	delete[] tmp;
@@ -133,7 +131,8 @@ void Game::printPlayers() {
 	std::cout << "The players are: ";
 	std::cout << std::endl;
 	for (int i = 0; i < (numPlayers + compplayers); i++) {
-		std::cout << players[i]->name;
+		std::cout << players[i]->name << " \'aka\' " << players[i]->c
+				<< ", Score: " << players[i]->score;
 		std::cout << std::endl;
 	}
 }
@@ -149,65 +148,98 @@ void Game::playGame() {
 	//Your code goes here
 	int i = 0;
 	while (boardFull != true) {
-		printBoard();
-		int move = turn;
 		//temporarily assume the user makes a valid move;
+		bool playerMove = true;
 		if (players[i % (numPlayers + compplayers)]->isComputer == true) {
-			bool playerMove = true;
-			int j = 0;
 			while (playerMove == true) {
-				while (j < size) {
-					int k = 0;
-					while (k < size) {
-						if (board[j][k] == ',') {
-							board[j][k] =
-									players[i % (numPlayers + compplayers)]->c;
-							if (checkFour(j, k) == true) {
-								players[i % (numPlayers + compplayers)]->score =
-										players[i % (numPlayers + compplayers)]->score
-												+ 1;
-								turn = turn + 1;
-								move = turn;
-							} else {
-								playerMove = false;
-								i++;
-								break;
-							}
-							move = move + 1;
-						}
-						k++;
-					}
-					if (move < turn || playerMove == false) {
-						break;
-					}
-					j++;
-				}
-			} //if
-		} else {
-			bool playerMove = true;
-			while (playerMove == true) {
-				std::cout << "Which x-coordinate would "
-						<< players[i % (numPlayers + compplayers)]->name
-						<< " like to use? (0 through " << size - 1 << ") ";
+				printBoard();
+				printPlayers();
 				int x;
-				std::cin >> x;
-				std::cout << std::endl;
-				std::cout << "Which y-coordinate would "
-						<< players[i % (numPlayers + compplayers)]->name
-						<< " like to use? (0 through " << size - 1 << ") ";
 				int y;
-				std::cin >> y;
+				bool validMove = false;
+				std::cout << "The Computer is thinking.";
+				while (validMove == false) {
+					y = (rand() % size);
+					x = (rand() % size);
+					if (board[y][x] == '.') {
+						validMove = true;
+					}
+					std::cout << ".";
+				}
 				std::cout << std::endl;
-				board[x][y] = players[i % (numPlayers + compplayers)]->c;
+				board[y][x] = players[i % (numPlayers + compplayers)]->c;
 				if (checkFour(x, y) == true) {
 					players[i % (numPlayers + compplayers)]->score = players[i
-							% (numPlayers + compplayers)]->score + 1;
+							% (numPlayers + compplayers)]->score
+							+ howMany(x, y);
 					turn = turn + 1;
-					move = turn;
 				} else {
 					playerMove = false;
-					i++;
 					turn = turn + 1;
+					i++;
+				}
+				if (turn == (size * size)) {
+					boardFull = true;
+					break;
+				}
+				if (turn == (size * size)) {
+					boardFull = true;
+					break;
+				}
+			}
+		} else {
+			int x;
+			int y;
+			while (playerMove == true) {
+				bool validMove = false;
+				while (validMove == false) {
+					printBoard();
+					printPlayers();
+					validMove = true;
+					std::cout << "Which x-coordinate would "
+							<< players[i % (numPlayers + compplayers)]->name
+							<< " like to use? (0 through " << size - 1 << ") ";
+					std::cin >> x;
+					std::cout << std::endl;
+					std::cout << "Which y-coordinate would "
+							<< players[i % (numPlayers + compplayers)]->name
+							<< " like to use? (0 through " << size - 1 << ") ";
+					std::cin >> y;
+					std::cout << std::endl;
+					if (x < 0 || x >= size) {
+						std::cout << "That was an invalid move! Try Again!"
+								<< std::endl;
+						validMove = false;
+					} else if (y < 0 || y >= size) {
+						std::cout << "That was an invalid move! Try Again!"
+								<< std::endl;
+						validMove = false;
+					} else {
+						for (int b = 0; b < (numPlayers + compplayers); b++) {
+							if (board[y][x] != '.') {
+								std::cout
+										<< "That was an invalid move! Try Again!"
+										<< std::endl;
+								validMove = false;
+								break;
+							}
+						}
+					}
+				}
+				board[y][x] = players[i % (numPlayers + compplayers)]->c;
+				if (checkFour(x, y) == true) {
+					players[i % (numPlayers + compplayers)]->score = players[i
+							% (numPlayers + compplayers)]->score
+							+ howMany(x, y);
+					turn = turn + 1;
+				} else {
+					playerMove = false;
+					turn = turn + 1;
+					i++;
+				}
+				if (turn == (size * size)) {
+					boardFull = true;
+					break;
 				}
 			}
 		} //else
@@ -216,6 +248,7 @@ void Game::playGame() {
 		}
 	}
 	printBoard();
+	printPlayers();
 	//Note: for the extra credit version, the findMoves method returns a dynamically created array of 3 different moveLists.
 	// The first of the 3  contains the list of moves that would complete a square. The second of the 3 contains a list of
 	// neutral moves, and the third of the 3 contains the list of moves that place a third corner on a square (which are bad
@@ -246,19 +279,21 @@ void Game::playGame() {
 bool Game::checkFour(int x, int y) {
 	// this method checks to see if placing a piece at x and y on the board will complete a square, and, if so, it
 	// returns true.  Otherwise it returns false.
+	char playerc[numPlayers + compplayers];
+	for (int a = 0; a < (numPlayers + compplayers); a++) {
+		playerc[a] = players[a]->c;
+	}
 	if (x == 0) {
 		if (y == 0) {
-			if ((board[0][1] != ',') && (board[1][0] != ',')
-					&& (board[1][1] != ',')) {
+			if (isSquare(x, y, x, y + 1, x + 1, y, x + 1, y + 1, playerc)) {
 				return true;
 			}    //if((board[0][1]....
 			else {
 				return false;
 			} //else
 		} //if(y==0)
-		else if (y == size) {
-			if ((board[0][size - 1] != ',') && (board[1][size] != ',')
-					&& (board[1][size - 1] != ',')) {
+		else if (y == size - 1) {
+			if (isSquare(x, y, x, y - 1, x + 1, y, x + 1, y - 1, playerc)) {
 				return true;
 			} //if((board[0][size-1]....
 			else {
@@ -266,46 +301,90 @@ bool Game::checkFour(int x, int y) {
 			} //else
 		} //else if
 		else {
-			if (((board[0][y - 1] != ',') && (board[1][y] != ',')
-					&& (board[1][y - 1] != ','))
-					|| ((board[0][y + 1] != ',') && (board[1][y] != ',')
-							&& (board[1][y + 1] != ','))) {
+			if (isSquare(x, y, x, y - 1, x + 1, y, x + 1, y - 1, playerc)) {
+				return true;
+			}
+			if (isSquare(x, y, x, y + 1, x + 1, y, x + 1, y + 1, playerc)) {
 				return true;
 			} //if((board[0][size-1]....
 			else {
 				return false;
 			} //else
 		}
-	} else if (x == size) {
+	} else if (x == size - 1) {
 		if (y == 0) {
-			if ((board[size][1] != ',') && (board[size - 1][0] != ',')
-					&& (board[size - 1][1] != ',')) {
+			if (isSquare(x, y, x, y + 1, x - 1, y, x - 1, y + 1, playerc)) {
 				return true;
 			} //if((board[size][1]....
 			else {
 				return false;
 			} //else
 		} //if(y==0)
-		else if (y == size) {
-			if ((board[size][size - 1] != ',') && (board[size - 1][size] != ',')
-					&& (board[size - 1][size - 1] != ',')) {
+		else if (y == size - 1) {
+			if (isSquare(x, y, x, y - 1, x - 1, y, x - 1, y - 1, playerc)) {
 				return true;
 			} //if((board[size][size-1]....
 			else {
 				return false;
 			} //else
-		} else {
-			if (((board[size][y - 1] != ',') && (board[size - 1][y] != ',')
-					&& (board[size - 1][y - 1] != ','))
-					|| ((board[size][y + 1] != ',')
-							&& (board[size - 1][y] != ',')
-							&& (board[size - 1][y + 1] != ','))) {
+		} else if ((y > 0) & (y < (size - 1))) {
+			if (isSquare(x, y, x, y + 1, x + 1, y, x + 1, y + 1, playerc)) {
+				return true;
+			}
+			if (isSquare(x, y, x, y - 1, x - 1, y, x - 1, y - 1, playerc)) {
 				return true;
 			} //if((board[0][size-1]....
 			else {
 				return false;
 			} //else
 		}
+	}
+	if (y == 0) {
+		if (x == size - 1) {
+			if (isSquare(x, y, x, y + 1, x - 1, y, x - 1, y + 1, playerc)) {
+				return true;
+			} //if((board[0][size-1]....
+			else {
+				return false;
+			} //else
+		} //else if
+		else if ((x > 0) & (x < (size - 1))) {
+			if (isSquare(x, y, x, y + 1, x + 1, y, x + 1, y + 1, playerc)) {
+				return true;
+			}
+			if (isSquare(x, y, x, y + 1, x - 1, y, x - 1, y + 1, playerc)) {
+				return true;
+			} //if((board[0][size-1]....
+			else {
+				return false;
+			} //else
+		}
+	} else if (y == size - 1) {
+		if (x == 0) {
+			if (isSquare(x, y, x, y - 1, x + 1, y, x + 1, y - 1, playerc)) {
+				return true;
+			} //if((board[size][1]....
+			else {
+				return false;
+			} //else
+		} //if(y==0)
+		else if ((x > 0) & (x < (size - 1))) {
+			if (isSquare(x, y, x, y - 1, x + 1, y, x + 1, y - 1, playerc)) {
+				return true;
+			}
+			if (isSquare(x, y, x, y - 1, x - 1, y, x - 1, y - 1, playerc)) {
+				return true;
+			} //if((board[0][size-1]....
+			else {
+				return false;
+			} //else
+		}
+	}
+	if (isSquare(x, y, x, y + 1, x - 1, y, x - 1, y + 1, playerc)
+			|| isSquare(x, y, x, y - 1, x + 1, y, x + 1, y - 1, playerc)
+			|| isSquare(x, y, x, y + 1, x + 1, y, x + 1, y + 1, playerc)
+			|| isSquare(x, y, x, y - 1, x - 1, y, x - 1, y - 1, playerc)) {
+		return true;
 	}
 	return false;
 }
@@ -331,3 +410,123 @@ void Game::getWinner() {
 // This method determines whether placing a piece on the board at x and y will complete ¾ of a square and, if so, it
 // returns true.  Otherwise it returns false.
 //}
+
+int Game::howMany(int x, int y) {
+	int sum = 0;
+	char playerc[numPlayers + compplayers];
+	for (int a = 0; a < (numPlayers + compplayers); a++) {
+		playerc[a] = players[a]->c;
+	}
+	if (x == 0) {
+		if (y == 0) {
+			if (isSquare(x, y, x, y + 1, x + 1, y, x + 1, y + 1, playerc)) {
+				sum = sum + 1;
+				return sum;
+			}    //if
+		} //if(y==0)
+		if (y == size - 1) {
+			if (isSquare(x, y, x, y - 1, x + 1, 0, x + 1, y - 1, playerc)) {
+				sum = sum + 1;
+				return sum;
+			} //if
+		} //else if
+		if ((y > 0) & (y < (size - 1))) {
+			if (isSquare(x, y, x, y - 1, x + 1, y, x + 1, y - 1, playerc)) {
+				sum = sum + 1;
+			}
+			if (isSquare(x, y, x, y + 1, x + 1, y, x + 1, y + 1, playerc)) {
+				sum = sum + 1;
+			} //if
+			return sum;
+		}
+	} else if (x == size - 1) {
+		if (y == 0) {
+			if (isSquare(x, y, x, y + 1, x - 1, y, x - 1, y + 1, playerc)) {
+				sum = sum + 1;
+				return sum;
+			} //if
+		} //if(y==0)
+		if (y == size - 1) {
+			if (isSquare(x, y, x, y - 1, x - 1, y, x - 1, y - 1, playerc)) {
+				sum = sum + 1;
+				return sum;
+			} //if
+		}
+		if ((y > 0) & (y < (size - 1))) {
+			if (isSquare(x, y, x, y + 1, x + 1, y, x + 1, y + 1, playerc)) {
+				sum = sum + 1;
+			} //if
+			if (isSquare(x, y, x, y - 1, x - 1, y, x - 1, y - 1, playerc)) {
+				sum = sum + 1;
+			} //if
+			return sum;
+		} //else
+	} else if (y == 0) {
+		if (isSquare(x, y, x, y + 1, x + 1, y, x + 1, y + 1, playerc)) {
+			sum = sum + 1;
+		} //if
+		if (isSquare(x, y, x, y + 1, x - 1, y, x - 1, y + 1, playerc)) {
+			sum = sum + 1;
+		} //if
+		return sum;
+	}
+	if (y == size - 1) {
+		if (isSquare(x, y, x, y - 1, x + 1, y, x + 1, y - 1, playerc)) {
+			sum = sum + 1;
+		} //if
+		if (isSquare(x, y, x, y - 1, x - 1, y, x - 1, y - 1, playerc)) {
+			sum = sum + 1;
+		} //if
+		return sum;
+	}
+	if (isSquare(x, y, x, y + 1, x - 1, y, x - 1, y + 1, playerc)) {
+		sum = sum + 1;
+	}
+	if (isSquare(x, y, x, y - 1, x + 1, y, x + 1, y - 1, playerc)) {
+		sum = sum + 1;
+	}
+	if (isSquare(x, y, x, y + 1, x + 1, y, x + 1, y + 1, playerc)) {
+		sum = sum + 1;
+	}
+	if (isSquare(x, y, x, y - 1, x - 1, y, x - 1, y - 1, playerc)) {
+		sum = sum + 1;
+	}
+	return sum;
+}
+
+bool Game::isSquare(int a, int b, int c, int d, int e, int f, int g, int h,
+		char[]) {
+	bool tmp1 = false;
+	bool tmp2 = false;
+	bool tmp3 = false;
+	bool tmp4 = false;
+	for (int i = 0; i < (compplayers + numPlayers); i++) {
+		if (board[b][a] == players[i]->c) {
+			tmp1 = true;
+			break;
+		}
+	}
+	for (int i = 0; i < (compplayers + numPlayers); i++) {
+		if (board[d][c] == players[i]->c) {
+			tmp2 = true;
+			break;
+		}
+	}
+	for (int i = 0; i < (compplayers + numPlayers); i++) {
+		if (board[f][e] == players[i]->c) {
+			tmp3 = true;
+			break;
+		}
+	}
+	for (int i = 0; i < (compplayers + numPlayers); i++) {
+		if (board[h][g] == players[i]->c) {
+			tmp4 = true;
+			break;
+		}
+	}
+	bool ret = false;
+	if ((tmp1 == true) & (tmp2 == true) & (tmp3 == true) & (tmp4 == true)) {
+		ret = true;
+	}
+	return ret;
+}

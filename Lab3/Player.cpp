@@ -1,5 +1,5 @@
 #include <iostream>
-#include <cstring>
+#include <string>
 #include <cstdlib>
 #include "Player.hpp"
 #include "cell.hpp"
